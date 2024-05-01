@@ -1,0 +1,14 @@
+{
+    "name": "opentab",
+    "version": "0.0.0",
+    "scripts": {
+        "web": "yarn workspace web",
+        "api": "yarn workspace api"
+    },
+    "private": true,
+    "workspaces": [
+        "libs/*",
+        "apps/*",
+        "utils/"
+    ]
+}

@@ -1,0 +1,16 @@
+{
+    "extends": "./tsconfig",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./",
+    },
+    "exclude": [
+        "dist",
+        "**/*.spec.ts",
+        "**/*.test.ts",
+        "**/__tests__"
+    ],
+    "include": [
+        "**/*.ts"
+    ]
+}
