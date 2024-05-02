@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "main": "src/index.ts",
   "dependencies": {
+    "@fishhat/db": "*",
     "pg-monitor": "^1.4.1",
     "pg-promise": "^10.12.0"
   },

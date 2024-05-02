@@ -200,11 +200,9 @@ export class Group {
     }
 }
 
-export interface ShortLink {
-    id: UUID;
-    path: string;
-    url: string;
-    created_at: string;
-    updated_at: string;
-    user_id: string;
+export type TokenSet = {
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+    token_type: string;
 }

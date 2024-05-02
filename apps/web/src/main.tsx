@@ -1,7 +1,7 @@
 import '@mantine/core/styles.css';
 import './App.less';
 
-import React, { createContext } from 'react';
+import React, { createContext, useContext } from 'react';
 import ReactDOM from 'react-dom/client';
 import {
   createBrowserRouter,
@@ -15,6 +15,72 @@ import Login from './routes/auth/Login';
 import Groups from './routes/Groups';
 
 import { createTheme, MantineColorsTuple, MantineProvider } from "@mantine/core";
+
+import ky from 'ky';
+import { TokenSet } from '@fishhat/db';
+
+const api = ky.create({
+  prefixUrl: `${import.meta.env.DEV ? "/api" : "https://api.opentab.dev"}`,
+  hooks: {
+    beforeRequest: [
+      async (request) => {
+        const token_set = localStorage.getItem("opentab-token");
+        if (token_set) {
+          try {
+            const token: TokenSet = JSON.parse(token_set);
+            request.headers.set("Authorization", `Bearer ${token.access_token}`);
+          } catch (error) {
+            console.error(error);
+          }
+        }
+      },
+    ],
+  },
+});
+
+const AppContext = createContext({})
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Root />,
+    errorElement: <NotFound />,
+    children: [
+      {
+        path: "/login",
+        element: <Login />,
+        action: async ({ request }) => {
+          // const $ctx = useContext(AppContext);
+          
+          let formData = await request.formData();
+
+          const data = {
+            email: formData.get("email") as string,
+            password: formData.get("password") as string,
+          }
+
+          const token_set: TokenSet = await api.post("auth/login", { json: data }).json();
+
+          localStorage.setItem("opentab-token", JSON.stringify(token_set));
+
+          return redirect("/groups");
+        },
+      },
+      // {
+      //   path: "/register",
+      //   element: <Register />,
+      // },
+      {
+        path: "/groups",
+        element: <Groups />,
+      },
+      // {
+      //   path: "/groups/:groupId",
+      //   element: <GroupOverview />,
+      // }
+    ],
+  },
+]);
 
 const primary: MantineColorsTuple = [
   '#eefcfa',
@@ -35,42 +101,9 @@ const openTabTheme = createTheme({
     primaryColor: 'primary',
 });
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Root />,
-    errorElement: <NotFound />,
-    children: [
-      {
-        path: "/login",
-        element: <Login />,
-        action: async ({ params, request }) => {
-          let formData = await request.formData();
-          console.log("formData", formData.get("email"), formData.get("password"))
-          return redirect("/groups");
-        },
-      },
-      // {
-      //   path: "/register",
-      //   element: <Register />,
-      // },
-      {
-        path: "/groups",
-        element: <Groups />,
-      },
-      // {
-      //   path: "/groups/:groupId",
-      //   element: <GroupOverview />,
-      // }
-    ],
-  },
-]);
-
-const AppContext = createContext({})
-
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <MantineProvider theme={openTabTheme}>
+    <MantineProvider defaultColorScheme='dark' theme={openTabTheme}>
       <RouterProvider router={router} />
     </MantineProvider>
   </React.StrictMode>,
