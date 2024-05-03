@@ -1,8 +1,10 @@
 import { TextInput, Checkbox, Button, Group, Box, PasswordInput, Flex, Text, Title, Container } from '@mantine/core';
 import { useForm, isEmail } from '@mantine/form';
-import { Form } from 'react-router-dom'
+import { Form, useActionData } from 'react-router-dom'
 
 function Login() {
+  const errors = useActionData() as ({ email?: boolean, password?: boolean } | undefined);
+
   const form = useForm({
     mode: 'uncontrolled',
     initialValues: {
@@ -33,6 +35,7 @@ function Login() {
                     key={form.key('email')}
                     {...form.getInputProps('email')}
                     mb="sm"
+                    error={errors?.email}
                     />
 
                     <PasswordInput
@@ -41,6 +44,7 @@ function Login() {
                         placeholder="something long and secure" 
                         key={form.key('password')}
                         {...form.getInputProps('password')}
+                        error={errors?.password}
                     />
 
                     {/* <Checkbox

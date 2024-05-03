@@ -6,7 +6,8 @@ import ReactDOM from 'react-dom/client';
 import {
   createBrowserRouter,
   RouterProvider,
-  redirect
+  redirect,
+  json
 } from "react-router-dom";
 
 import Root from './routes/Root';
@@ -17,7 +18,22 @@ import Groups from './routes/Groups';
 import { createTheme, MantineColorsTuple, MantineProvider } from "@mantine/core";
 
 import ky from 'ky';
-import { TokenSet } from '@fishhat/db';
+// import { TokenSet, User } from '@fishhat/db';
+
+export type TokenSet = {
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
+  token_type: string;
+};
+
+export type User = {
+  id: string;
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  profile_picture?: string;
+};
 
 const api = ky.create({
   prefixUrl: `${import.meta.env.DEV ? "/api" : "https://api.opentab.dev"}`,
@@ -38,30 +54,61 @@ const api = ky.create({
   },
 });
 
-const AppContext = createContext({})
+const AppContext = createContext<{ user?: User }>({})
+
+const loadUser = async () => {  
+  try {
+    const raw_token_set = localStorage.getItem("opentab-token");
+ 
+    if (!raw_token_set) {
+      return null;
+    }
+
+    const token_set: TokenSet = JSON.parse(raw_token_set);
+
+    const raw_user_response: { $data: User } = await api.get("v1/me", {
+      headers: {
+        Authorization: `Bearer ${token_set.access_token}`,
+      }
+    }).json();
+  
+    const { $data: raw_user } = raw_user_response;
+
+    return { user: raw_user as User };
+  } catch (error) {
+    console.error(error);
+    return null
+  }
+}
+
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Root />,
     errorElement: <NotFound />,
+    loader: loadUser,
     children: [
       {
         path: "/login",
         element: <Login />,
         action: async ({ request }) => {
-          // const $ctx = useContext(AppContext);
-          
           let formData = await request.formData();
+
+          console.log(formData.get("email"), formData.get("password"))
 
           const data = {
             email: formData.get("email") as string,
             password: formData.get("password") as string,
           }
 
-          const token_set: TokenSet = await api.post("auth/login", { json: data }).json();
-
-          localStorage.setItem("opentab-token", JSON.stringify(token_set));
+          try {
+            const token_set: TokenSet = await api.post("auth/login", { json: data }).json();
+            localStorage.setItem("opentab-token", JSON.stringify(token_set));
+          } catch (error) {
+            console.log(error);
+            return json({ email: true, password: true });
+          }
 
           return redirect("/groups");
         },

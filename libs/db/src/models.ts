@@ -23,7 +23,7 @@ export class User {
         this.token = data.token;
     }
 
-    public static init(data: User) {
+    public static init(data: any) {
         return new User(data);
     }
 
@@ -70,12 +70,15 @@ export class Token {
     }
 }
 
-export type ExpenseSplit = Record<UUID, {
-    percent?: number;
-    fixed?: number;
-    shares?: number;
-    adjustment?: number;
-}> 
+export type ExpenseSplit = Record<
+    UUID,
+    {
+        percent?: number;
+        fixed?: number;
+        shares?: number;
+        adjustment?: number;
+    }
+>;
 
 export class Expense {
     id: UUID;
@@ -90,7 +93,7 @@ export class Expense {
     created_at: string;
     updated_at: string;
 
-    constructor(data: Omit<Expense, 'total'>) {
+    constructor(data: Omit<Expense, "total">) {
         this.id = data.id;
         this.payee_id = data.payee_id;
         this.payer_ids = data.payer_ids;
@@ -104,7 +107,7 @@ export class Expense {
         this.updated_at = data.updated_at;
     }
 
-    public static init(data: Omit<Expense, 'total'>) {
+    public static init(data: Omit<Expense, "total">) {
         return new Expense(data);
     }
 
@@ -160,7 +163,6 @@ export class Membership {
             updated_at: data.membership_updated_at,
         });
     }
-
 }
 
 export class Group {
@@ -195,7 +197,7 @@ export class Group {
             color: data.group_color,
             icon: data.group_icon,
             created_at: data.group_created_at,
-            updated_at: data.group_updated_at
+            updated_at: data.group_updated_at,
         });
     }
 }
@@ -205,4 +207,4 @@ export type TokenSet = {
     refresh_token: string;
     expires_in: number;
     token_type: string;
-}
+};

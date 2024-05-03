@@ -38,11 +38,11 @@ function GroupList() {
 
     return (
         <>
-            <Flex mb={10} align="center" justify="space-between" gap="md">
+            <Flex w={"100%"} mb={10} align="center" justify="space-between" gap="md">
                 <Text size="lg" fw={700}>Your Groups</Text>
                 <Button variant="light" size="xs">Create Group</Button>
             </Flex>
-            <Stack h={300} bg="var(--mantine-color-body)" align="stretch" justify="flex-start" gap="xs">
+            <Stack w={"100%"} h={300} bg="var(--mantine-color-body)" align="stretch" justify="flex-start" gap="xs">
                 {/* For each grop create an entry */}
                 {groups.map((group) => (
                     <Link to={`/groups/${group.id}`} key={group.id} className="unstyled">
