@@ -1,9 +1,9 @@
 import { useContext } from "react";
-import { Outlet, useLoaderData, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLoaderData, useNavigate } from "react-router-dom";
 import { AppContext } from "../main";
 import { useDisclosure } from '@mantine/hooks';
 import { AppShell, Avatar, Text, Burger, Container, Flex, Group, Title, Box } from "@mantine/core";
-import { IconArrowLeft } from '@tabler/icons-react';
+import { IconArrowLeft, IconSettings } from '@tabler/icons-react';
 
 function Root() {
     const [opened, { toggle }] = useDisclosure();
@@ -28,7 +28,7 @@ function Root() {
             <AppShell.Header withBorder={false}>
                 <Container size="sm" px={10}>
                     <Group h="100%">
-                        <IconArrowLeft color="var(--mantine-color-text)" size={36} style={{ cursor: 'pointer' }} onClick={() => navigate(-1)} />
+                        <IconArrowLeft color="var(--mantine-color-text)" size={24} style={{ cursor: 'pointer' }} onClick={() => navigate(-1)} />
                         <div style={{ flex: 1 }}></div>
                         <Title order={1} mt={10} mb={15} ml={0}>OpenTab</Title>
                         <div style={{ flex: 1 }}></div>
@@ -38,7 +38,7 @@ function Root() {
                                 <UnstyledButton py='xs' px='md'>Support</UnstyledButton>
                             </Group>
                         </Group> */}
-                        <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
+                        <Burger opened={opened} onClick={toggle} size="sm" />
                     </Group>
                 </Container>
             </AppShell.Header>
@@ -59,6 +59,10 @@ function Root() {
                                 <Text fw={600} size="md" lh={1}>{$ctx.user?.first_name} {$ctx.user?.last_name}</Text>
                                 <Text size="sm" >{$ctx.user?.email}</Text>
                             </Flex>
+                            <div style={{ flex: 1 }}></div>
+                            <Link to={`/settings`} className="unstyled">
+                                <IconSettings color="var(--mantine-color-text)" size={24} style={{ cursor: 'pointer' }} />
+                            </Link>
                         </Flex>
                     </Flex>
                 </Container>

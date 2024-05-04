@@ -1,7 +1,7 @@
 import '@mantine/core/styles.css';
 import './App.less';
 
-import React, { createContext } from 'react';
+import React, { createContext, useContext } from 'react';
 import ReactDOM from 'react-dom/client';
 import {
   createBrowserRouter,
@@ -130,7 +130,9 @@ const router = createBrowserRouter([
         loader: async ({ params }) => {
           const raw_group_response: { $data: Record<string, any> } = await api.get(`v1/groups/${params.group_id}`).json();
           const { $data: raw_group } = raw_group_response;
-          return { group: raw_group };
+          const raw_expenses_response: { $data: Record<string, any>[] } = await api.get(`v1/groups/${params.group_id}/expenses`).json();
+          const { $data: raw_expenses } = raw_expenses_response;
+          return { group: raw_group, expenses: raw_expenses};
         }
       }
     ],
