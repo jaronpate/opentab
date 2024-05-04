@@ -14,6 +14,7 @@ import Root from './routes/Root';
 import NotFound from './routes/NotFound';
 import Login from './routes/auth/Login';
 import Groups from './routes/Groups';
+import GroupOverview from './routes/GroupOverview';
 
 import { createTheme, MantineColorsTuple, MantineProvider } from "@mantine/core";
 
@@ -61,7 +62,7 @@ const loadUser = async () => {
     const raw_token_set = localStorage.getItem("opentab-token");
  
     if (!raw_token_set) {
-      return null;
+      return redirect("/login");
     }
 
     const token_set: TokenSet = JSON.parse(raw_token_set);
@@ -77,12 +78,37 @@ const loadUser = async () => {
     return { user: raw_user as User };
   } catch (error) {
     console.error(error);
-    return null
+    throw new Error("Failed to load user");
   }
 }
 
 
 const router = createBrowserRouter([
+  {
+    path: "/login",
+    element: <Login />,
+    action: async ({ request }) => {
+      let formData = await request.formData();
+
+      const data = {
+        email: formData.get("email") as string,
+        password: formData.get("password") as string,
+      }
+
+      try {
+        const token_set: TokenSet = await api.post("auth/login", { json: data }).json();
+        localStorage.setItem("opentab-token", JSON.stringify(token_set));
+      } catch (error) {
+        return json({ email: true, password: true });
+      }
+
+      return redirect("/groups");
+    },
+  },
+  // {
+  //   path: "/register",
+  //   element: <Register />,
+  // },
   {
     path: "/",
     element: <Root />,
@@ -90,43 +116,25 @@ const router = createBrowserRouter([
     loader: loadUser,
     children: [
       {
-        path: "/login",
-        element: <Login />,
-        action: async ({ request }) => {
-          let formData = await request.formData();
-
-          console.log(formData.get("email"), formData.get("password"))
-
-          const data = {
-            email: formData.get("email") as string,
-            password: formData.get("password") as string,
-          }
-
-          try {
-            const token_set: TokenSet = await api.post("auth/login", { json: data }).json();
-            localStorage.setItem("opentab-token", JSON.stringify(token_set));
-          } catch (error) {
-            console.log(error);
-            return json({ email: true, password: true });
-          }
-
-          return redirect("/groups");
-        },
-      },
-      // {
-      //   path: "/register",
-      //   element: <Register />,
-      // },
-      {
         path: "/groups",
         element: <Groups />,
+        loader: async () => {
+          const raw_groups_response: { $data: Record<string, any>[] } = await api.get("v1/groups").json();
+          const { $data: raw_groups } = raw_groups_response;
+          return { groups: raw_groups };
+        }
       },
-      // {
-      //   path: "/groups/:groupId",
-      //   element: <GroupOverview />,
-      // }
+      {
+        path: "/groups/:group_id",
+        element: <GroupOverview />,
+        loader: async ({ params }) => {
+          const raw_group_response: { $data: Record<string, any> } = await api.get(`v1/groups/${params.group_id}`).json();
+          const { $data: raw_group } = raw_group_response;
+          return { group: raw_group };
+        }
+      }
     ],
-  },
+  }
 ]);
 
 const primary: MantineColorsTuple = [

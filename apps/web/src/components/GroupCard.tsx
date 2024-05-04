@@ -1,10 +1,6 @@
-import { useState } from "react";
 import { Avatar, Box, Text, Flex, Tooltip } from "@mantine/core";
-import { useHover } from '@mantine/hooks';
 
 function GroupCard({ group }: { group: Record<string, any> }) {
-    // Create an array to store groups in
-
     return (
         <>
             <Box key={group.id}>
@@ -19,15 +15,15 @@ function GroupCard({ group }: { group: Record<string, any> }) {
                     wrap="nowrap"
                     className="group-card"
                 >
-                    {/* <Avatar size="md" /> */}
-                    <Text size="md" fw={500} ml={5}>{group.name}</Text>
+                    <Avatar size="md" src={group.icon} />
+                    <Text size="md" fw={500}>{group.name}</Text>
                     <div style={{ flexGrow: 1 }} />
                     <Tooltip.Group openDelay={300} closeDelay={100}>
                     <Avatar.Group spacing="sm">
                         {/* For each member create an avatar in the stack */}
                         {group.members.map((member: Record<string, any>) => (
-                            <Tooltip label={member.display_name} withArrow key={member.id}>
-                                <Avatar src={member.avatar_url} radius="xl" />
+                            <Tooltip label={member?.first_name ? `${member.first_name} ${member.last_name}`.trim() : member.email} withArrow key={member.id}>
+                                <Avatar src={member.profile_picture} radius="xl" />
                             </Tooltip>
                         ))}
                         {/* <Tooltip

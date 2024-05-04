@@ -174,6 +174,7 @@ export class Group {
     created_at: string;
     updated_at: string;
     membership?: Membership;
+    members?: User[];
 
     constructor(data: Group) {
         this.id = data.id;
