@@ -1,8 +1,9 @@
 import { useContext } from "react";
-import { Outlet, useLoaderData } from "react-router-dom";
+import { Outlet, useLoaderData, useNavigate } from "react-router-dom";
 import { AppContext } from "../main";
 import { useDisclosure } from '@mantine/hooks';
-import { AppShell, Avatar, Text, Burger, Container, Flex, Group, Title } from "@mantine/core";
+import { AppShell, Avatar, Text, Burger, Container, Flex, Group, Title, Box } from "@mantine/core";
+import { IconArrowLeft } from '@tabler/icons-react';
 
 function Root() {
     const [opened, { toggle }] = useDisclosure();
@@ -16,6 +17,8 @@ function Root() {
         }
     }
 
+    const navigate = useNavigate();
+
     return (
 
         <AppShell
@@ -25,14 +28,17 @@ function Root() {
             <AppShell.Header withBorder={false}>
                 <Container size="sm" px={10}>
                     <Group h="100%">
-                        <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-                        <Group justify="space-between" style={{ flex: 1 }}>
+                        <IconArrowLeft color="var(--mantine-color-text)" size={36} style={{ cursor: 'pointer' }} onClick={() => navigate(-1)} />
+                        <div style={{ flex: 1 }}></div>
                         <Title order={1} mt={10} mb={15} ml={0}>OpenTab</Title>
-                        <Group ml="xl" gap={0} visibleFrom="sm">
-                            {/* <UnstyledButton py='xs' px='md'>About</UnstyledButton>
-                            <UnstyledButton py='xs' px='md'>Support</UnstyledButton> */}
-                        </Group>
-                        </Group>
+                        <div style={{ flex: 1 }}></div>
+                        {/* <Group justify="space-between" style={{ flex: 1 }}>
+                            <Group ml="xl" gap={0} visibleFrom="sm">
+                                <UnstyledButton py='xs' px='md'>About</UnstyledButton>
+                                <UnstyledButton py='xs' px='md'>Support</UnstyledButton>
+                            </Group>
+                        </Group> */}
+                        <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
                     </Group>
                 </Container>
             </AppShell.Header>

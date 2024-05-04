@@ -1,7 +1,7 @@
 import '@mantine/core/styles.css';
 import './App.less';
 
-import React, { createContext, useContext } from 'react';
+import React, { createContext } from 'react';
 import ReactDOM from 'react-dom/client';
 import {
   createBrowserRouter,
