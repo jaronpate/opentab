@@ -1,4 +1,3 @@
-import { Avatar, Text, Container, Flex, Title, Tooltip } from "@mantine/core";
 import { useLoaderData } from "react-router-dom";
 import GroupTitle from "../components/GroupTitle";
 import ExpensesList from "../components/ExpensesList";

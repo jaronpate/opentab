@@ -1,36 +1,32 @@
 import { useContext } from "react";
 import { Link, Outlet, useLoaderData, useNavigate } from "react-router-dom";
-import { AppContext } from "../main";
+import { AppContext, NotifyContext, notifyClose } from "../main";
 import { useDisclosure } from '@mantine/hooks';
-import { AppShell, Avatar, Text, Burger, Container, Flex, Group, Title, Box } from "@mantine/core";
+import { AppShell, Avatar, Text, Burger, Container, Flex, Group, Title, Notification } from "@mantine/core";
 import { IconArrowLeft, IconSettings } from '@tabler/icons-react';
 
 function Root() {
-    const [opened, { toggle }] = useDisclosure();
+    const [burgerOpened, { toggle: burgerToggle }] = useDisclosure();
 
     const state = useLoaderData() as ({ user?: any } | undefined);
     const $ctx = useContext(AppContext);
-
-    if (state) {
-        if (state.user) {
-            $ctx.user = state.user;
-        }
-    }
+    const $notify = useContext(NotifyContext);
 
     const navigate = useNavigate();
 
     return (
-
         <AppShell
             header={{ height: 60 }}
-            navbar={{ width: 300, breakpoint: 'sm', collapsed: { desktop: true, mobile: !opened } }}
+            navbar={{ width: 300, breakpoint: 'sm', collapsed: { desktop: true, mobile: !burgerOpened } }}
         >
             <AppShell.Header withBorder={false}>
                 <Container size="sm" px={10}>
                     <Group h="100%">
                         <IconArrowLeft color="var(--mantine-color-text)" size={24} style={{ cursor: 'pointer' }} onClick={() => navigate(-1)} />
                         <div style={{ flex: 1 }}></div>
-                        <Title order={1} mt={10} mb={15} ml={0}>OpenTab</Title>
+                        <Link to="/groups" className="unstyled">
+                            <Title order={1} mt={10} mb={15} ml={0}>OpenTab</Title>
+                        </Link>
                         <div style={{ flex: 1 }}></div>
                         {/* <Group justify="space-between" style={{ flex: 1 }}>
                             <Group ml="xl" gap={0} visibleFrom="sm">
@@ -38,7 +34,7 @@ function Root() {
                                 <UnstyledButton py='xs' px='md'>Support</UnstyledButton>
                             </Group>
                         </Group> */}
-                        <Burger opened={opened} onClick={toggle} size="sm" />
+                        <Burger opened={burgerOpened} onClick={burgerToggle} size="sm" />
                     </Group>
                 </Container>
             </AppShell.Header>
@@ -56,7 +52,7 @@ function Root() {
                         <Flex w={"100%"} mt={10} align="center" direction="row">
                             <Avatar size="md" src={$ctx.user?.profile_picture} mr={15} />
                             <Flex direction="column">
-                                <Text fw={600} size="md" lh={1}>{$ctx.user?.first_name} {$ctx.user?.last_name}</Text>
+                                <Text fw={600} size="md" lh={1}>{$ctx.user?.first_name} {$ctx.user?.last_name ?? ''}</Text>
                                 <Text size="sm" >{$ctx.user?.email}</Text>
                             </Flex>
                             <div style={{ flex: 1 }}></div>
@@ -67,6 +63,18 @@ function Root() {
                     </Flex>
                 </Container>
             </AppShell.Main>
+
+            
+            {/* disply notification if notifyopend true */}
+            {$notify.opened && <Notification
+                title={$notify.data.title}
+                color={$notify.data.color}
+                onClose={() => notifyClose($notify)}
+                withCloseButton
+                style={{ position: 'fixed', bottom: 10, right: 10 }}>
+                    {$notify.data.text}
+                </Notification>
+            }
         </AppShell>
     );
 }

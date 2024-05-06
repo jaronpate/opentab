@@ -137,6 +137,7 @@ export class Membership {
     user_id: UUID;
     group_id: UUID;
     role: string;
+    status: "active" | "pending" | "inactive";
     created_at: string;
     updated_at: string;
 
@@ -145,6 +146,7 @@ export class Membership {
         this.user_id = data.user_id;
         this.group_id = data.group_id;
         this.role = data.role;
+        this.status = data.status;
         this.created_at = data.created_at;
         this.updated_at = data.updated_at;
     }
@@ -159,6 +161,7 @@ export class Membership {
             user_id: data.user_id,
             group_id: data.group_id,
             role: data.membership_role,
+            status: data.membership_status,
             created_at: data.membership_created_at,
             updated_at: data.membership_updated_at,
         });

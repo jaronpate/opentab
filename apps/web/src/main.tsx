@@ -1,7 +1,7 @@
 import '@mantine/core/styles.css';
 import './App.less';
 
-import React, { createContext, useContext } from 'react';
+import { createContext } from 'react';
 import ReactDOM from 'react-dom/client';
 import {
   createBrowserRouter,
@@ -55,7 +55,7 @@ const api = ky.create({
   },
 });
 
-const AppContext = createContext<{ user?: User }>({})
+const AppContext = createContext<{ user?: User, notify?: (title: string, text: string, color?: string) => void }>({});
 
 const loadUser = async () => {  
   try {
@@ -116,24 +116,68 @@ const router = createBrowserRouter([
     loader: loadUser,
     children: [
       {
-        path: "/groups",
+        path: "groups",
         element: <Groups />,
+        action: async ({ request }) => {
+          let formData = await request.formData();
+
+          const data = {
+            name: formData.get("name"),
+            // icon: formData.get("icon"),
+          }
+
+          try {
+            // Create group
+            const raw_group_response: { $data: Record<string, any> } = await api.post("v1/groups", { json: data }).json();
+            // Extract group from response
+            const { $data: raw_group } = raw_group_response;
+
+            return { group: raw_group }
+          } catch (error) {
+            console.error(error);
+            throw new Error("Failed to create group");
+          }
+        },
         loader: async () => {
+          // Load groups
           const raw_groups_response: { $data: Record<string, any>[] } = await api.get("v1/groups").json();
+          // Extract groups from response
           const { $data: raw_groups } = raw_groups_response;
           return { groups: raw_groups };
         }
       },
       {
-        path: "/groups/:group_id",
+        path: "groups/:group_id",
         element: <GroupOverview />,
+        action: async ({ params, request }) => {
+          const form_data = await request.formData();
+          const intent = form_data.get("intent");
+
+          if (intent === "invite") {
+            const data = {
+              email: form_data.get("email"),
+            }
+
+            try {
+              const raw_invite_response = await api.post(`v1/groups/${params.group_id}/invite`, { json: data });
+
+              return { invite: raw_invite_response.ok };
+            } catch (error) {
+              console.error(error);
+              throw new Error("Failed to invite member");
+            }
+          }
+        },
         loader: async ({ params }) => {
+          // Fetch group
           const raw_group_response: { $data: Record<string, any> } = await api.get(`v1/groups/${params.group_id}`).json();
           const { $data: raw_group } = raw_group_response;
+          // List expenses
           const raw_expenses_response: { $data: Record<string, any>[] } = await api.get(`v1/groups/${params.group_id}/expenses`).json();
           const { $data: raw_expenses } = raw_expenses_response;
+          // Return group and expenses
           return { group: raw_group, expenses: raw_expenses};
-        }
+        },
       }
     ],
   }
@@ -159,11 +203,31 @@ const openTabTheme = createTheme({
 });
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <MantineProvider defaultColorScheme='dark' theme={openTabTheme}>
       <RouterProvider router={router} />
     </MantineProvider>
-  </React.StrictMode>,
+  // </React.StrictMode>
 )
 
-export { AppContext };
+const NotifyContext = createContext<{ opened: boolean, data: { title: string, text: string, color: string } }>({
+  opened: true,
+  data: { title: '', text: '', color: 'teal' },
+});
+
+const notifyToggle = ($notify: Record<string, any>) => {
+  $notify.opened = !$notify.opened;
+}
+
+const notifyClose = ($notify: Record<string, any>) => {
+  console.log('closing');
+  $notify.opened = false;
+}
+
+const notify = ($notify: Record<string, any>, title: string, text: string, color?: string) => {
+  $notify.data = { title, text, color: color ?? 'teal' };
+  notifyToggle($notify);
+  setTimeout(() => notifyClose($notify), 2500);
+}
+
+export { AppContext, NotifyContext, notify, notifyClose, notifyToggle };

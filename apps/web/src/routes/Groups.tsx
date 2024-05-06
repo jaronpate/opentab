@@ -1,7 +1,8 @@
 import { Button, Drawer, Flex, Text, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
-import { Form, useLoaderData } from "react-router-dom";
+import { useEffect } from "react";
+import { Form, useActionData, useLoaderData } from "react-router-dom";
 import GroupList from "../components/GroupList";
 
 function Groups() {
@@ -20,6 +21,16 @@ function Groups() {
             name: (value) => value.length < 3 && 'Name is too short',
         },
     });
+
+    // Close the drawer when the form is submitted
+    const response = useActionData() as ({ group?: Record<string, any> } | undefined);
+
+    useEffect(() => {
+        if (response?.group) {
+            close();
+        }
+    }, [response, close]);
+
     return (
         <>
             <Flex w={"100%"} align="center" direction="column" h={'100%'}>
@@ -39,7 +50,7 @@ function Groups() {
                     overlayProps={{ backgroundOpacity: 0.3, blur: 2 }}
                     style={{ borderRadius: 3 }}
                 >
-                    <Form>
+                    <Form method='post'>
                         <TextInput
                             label="Name"
                             name='name'
@@ -47,6 +58,7 @@ function Groups() {
                             key={form.key('name')}
                             {...form.getInputProps('name')}
                             mb="sm"
+                            autoComplete="false"
                         />
                         <Button type="submit" size='xs'>Create</Button>
                     </Form>

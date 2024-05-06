@@ -22,7 +22,7 @@ function GroupCard({ group }: { group: Record<string, any> }) {
                     <Avatar.Group spacing="sm">
                         {/* For each member create an avatar in the stack */}
                         {group.members.map((member: Record<string, any>) => (
-                            <Tooltip label={member?.first_name ? `${member.first_name} ${member.last_name}`.trim() : member.email} withArrow key={member.id}>
+                            <Tooltip label={member?.first_name ? `${member.first_name} ${member.last_name ?? ''}`.trim() : member.email} withArrow key={member.id}>
                                 <Avatar src={member.profile_picture} radius="xl" />
                             </Tooltip>
                         ))}

@@ -175,7 +175,7 @@ groups_router.get("/groups/:group_id/summary", async (ctx) => {
             members.set(raw_member.user_id, user);
         }
 
-        // Make map to track groub member balances
+        // Make map to track group member balances between each other
         const summary = new Map<UUID, Record<UUID, Decimal>>();
 
         const member_ids = Array.from(members.keys());
@@ -214,24 +214,60 @@ groups_router.get("/groups/:group_id/summary", async (ctx) => {
             }
         }
 
-        const formatted: Record<UUID, { user: User | null; member_id: UUID; debts: Record<string, Number> }> = {};
+        const formatted_debts: Record<
+            UUID,
+            { user: User | null; member_id: UUID; debts: Record<string, number>; total_debt: number }
+        > = {};
 
         for (const [member_id, debts] of summary.entries()) {
             const user = members.get(member_id);
-            const formatted_debts: Record<string, Number> = {};
+            const formatted: Record<string, number> = {};
+
+            let total_debt = new Decimal(0);
 
             for (const [debtor_id, amount] of Object.entries(debts)) {
-                formatted_debts[debtor_id] = amount.toNumber();
+                formatted[debtor_id] = amount.toNumber();
+                total_debt = total_debt.add(amount);
             }
 
-            formatted[member_id] = {
+            formatted_debts[member_id] = {
                 user: user ? user : null,
                 member_id,
-                debts: formatted_debts,
+                debts: formatted,
+                total_debt: total_debt.toNumber(),
             };
         }
 
-        return response(ctx, formatted);
+        const sorted = Object.values(formatted_debts)
+            .sort((a, b) => {
+                return a.total_debt - b.total_debt;
+            })
+            .map((member) => member.member_id);
+
+        console.log(JSON.stringify(sorted, null, 2));
+
+        for (const member_id of sorted) {
+            const member = formatted_debts[member_id];
+            const debts = member.debts;
+
+            console.log("=".repeat(80));
+            console.log(member.user?.first_name, member_id, member.total_debt);
+            console.log(JSON.stringify(debts, null, 2));
+
+            for (const [debtor_id, amount] of Object.entries(debts)) {
+                console.log("=".repeat(80));
+                console.log(`   ${member_id} owes ${debtor_id} ${amount}`);
+
+                const owed = formatted_debts[debtor_id].debts[member_id];
+                if (owed > amount) {
+                    console.log(`       ${debtor_id} owes ${member_id} ${owed}`);
+                    formatted_debts[debtor_id].debts[member_id] = 0;
+                    formatted_debts[member_id].debts[debtor_id] = amount - owed;
+                }
+            }
+        }
+
+        return response(ctx, formatted_debts);
     } catch (err) {
         console.log(err);
 

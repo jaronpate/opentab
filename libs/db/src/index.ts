@@ -1,24 +1,23 @@
-import pgPromise from 'pg-promise'; // pg-promise core library
-import {IInitOptions, IDatabase, IMain} from 'pg-promise';
-import {IExtensions} from './repos';
-import { Helpers } from './repos/helpers';
-export * from './models';
+import pgPromise from "pg-promise"; // pg-promise core library
+import { IInitOptions, IDatabase, IMain } from "pg-promise";
+import { IExtensions } from "./repos";
+import { Helpers } from "./repos/helpers";
+export * from "./models";
 
 const dbConfig = {
-  host: process.env.PGHOST,
-  port: parseInt(process.env.PGPORT!),
-  database: process.env.PGDATABASE,
-  user: process.env.PGUSER,
-  password: process.env.PGPASSWORD,
-  allowExitOnIdle: true
+    host: process.env.PGHOST,
+    port: parseInt(process.env.PGPORT!),
+    database: process.env.PGDATABASE,
+    user: process.env.PGUSER,
+    password: process.env.PGPASSWORD,
+    allowExitOnIdle: true,
 };
 
 export type ExtendedProtocol = IDatabase<IExtensions> & IExtensions;
 
 // pg-promise initialization options:
 const initOptions: IInitOptions<IExtensions> = {
-  
-    query: (e: any) => console.log('QUERY:', e.query),
+    // query: (e: any) => console.log('QUERY:', e.query),
 
     // Extending the database protocol with our custom repositories;
     // API: http://vitaly-t.github.io/pg-promise/global.html#event:extend
@@ -28,7 +27,7 @@ const initOptions: IInitOptions<IExtensions> = {
         // Do not use 'require()' here, because this event occurs for every task and transaction being executed,
         // which should be as fast as possible.
         obj.helpers = new Helpers(obj, pgp);
-    }
+    },
 };
 
 // Initializing the library:
@@ -39,4 +38,4 @@ const db: ExtendedProtocol = pgp(dbConfig);
 
 // Alternatively, you can get access to pgp via db.$config.pgp
 // See: https://vitaly-t.github.io/pg-promise/Database.html#$config
-export {db, pgp};
+export { db, pgp };

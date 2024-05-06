@@ -19,7 +19,6 @@ function ExpensesList({ group, expenses }: { group: any, expenses: any[] }) {
                     const day = date.getDate();
 
                     const payee = group.members.find((member: any) => member.id === expense.payee_id);
-                    console.log(group.members)
                     const payee_name = (() => {
                         if (payee) {
                             if (payee.id === $ctx.user!.id) {
@@ -38,7 +37,9 @@ function ExpensesList({ group, expenses }: { group: any, expenses: any[] }) {
                     const my_split = expense.split[$ctx.user!.id];
 
                     const my_share = (() => {
-                        if (my_split.fixed) {
+                        if (payee.id === $ctx.user!.id) {
+                            return '0.00';
+                        } else if (my_split.fixed) {
                             // fixed amount to deduct
                             return new Decimal(my_split.fixed).toFixed(2);
                         } else if (my_split.percent) {
