@@ -14,6 +14,37 @@ import { db, User, Group, Membership, Expense, UUID } from "@fishhat/db";
 
 const groups_router = new Router();
 
+groups_router.get("/invites", async (ctx) => {
+    try {
+        const raw_invites = await db.any(
+            `
+            SELECT m.*, g.*
+            FROM memberships m
+            INNER JOIN groups g USING(group_id)
+            WHERE m.user_id = $1
+            AND m.membership_status = 'pending'
+        `,
+            [ctx.state.user.id]
+        );
+
+        const invites = raw_invites.map((row: any) => {
+            const group = Group.fromDB(row);
+            const membership = Membership.fromDB(row);
+
+            group.membership = membership;
+            return group;
+        });
+
+        return response(ctx, invites);
+    } catch (err) {
+        return error(ctx, {
+            message: "Failed to fetch invites",
+            code: "INTERNAL_ERROR",
+            status: 500,
+        });
+    }
+});
+
 groups_router.get("/groups", async (ctx) => {
     try {
         const raw_groups = await db.any(
@@ -22,6 +53,7 @@ groups_router.get("/groups", async (ctx) => {
             FROM groups g
             JOIN memberships m USING(group_id)
             WHERE user_id = $1
+            AND membership_status = 'active'
         `,
             [ctx.state.user.id]
         );
@@ -34,6 +66,7 @@ groups_router.get("/groups", async (ctx) => {
             FROM memberships m
             INNER JOIN users u USING(user_id)
             WHERE m.group_id IN ($1:csv)
+            AND m.membership_status = 'active'
         `,
             [group_ids]
         );

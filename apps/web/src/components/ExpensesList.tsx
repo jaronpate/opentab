@@ -1,14 +1,9 @@
 import { Flex, Group, Stack, Text } from "@mantine/core";
-import { useContext } from "react";
-import { AppContext } from "../main";
 import Decimal from "decimal.js";
+import { useSharedState } from "../store";
 
 function ExpensesList({ group, expenses }: { group: any, expenses: any[] }) {
-    const $ctx = useContext(AppContext);
-
-    if (!$ctx.user) {
-        throw new Error("Not logged in");
-    }
+    const [$state, _] = useSharedState();
     
     return (
         <>
@@ -21,7 +16,7 @@ function ExpensesList({ group, expenses }: { group: any, expenses: any[] }) {
                     const payee = group.members.find((member: any) => member.id === expense.payee_id);
                     const payee_name = (() => {
                         if (payee) {
-                            if (payee.id === $ctx.user!.id) {
+                            if (payee.id === $state.user!.id) {
                                 return 'You';
                             } else if (payee.first_name) {
                                 return payee.first_name;
@@ -34,10 +29,10 @@ function ExpensesList({ group, expenses }: { group: any, expenses: any[] }) {
                     })();
 
                     const total = new Decimal(expense.subtotal).add(expense.tax);
-                    const my_split = expense.split[$ctx.user!.id];
+                    const my_split = expense.split[$state.user!.id];
 
                     const my_share = (() => {
-                        if (payee.id === $ctx.user!.id) {
+                        if (payee.id === $state.user!.id) {
                             return '0.00';
                         } else if (my_split.fixed) {
                             // fixed amount to deduct

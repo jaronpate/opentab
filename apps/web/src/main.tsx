@@ -19,6 +19,7 @@ import GroupOverview from './routes/GroupOverview';
 import { createTheme, MantineColorsTuple, MantineProvider } from "@mantine/core";
 
 import ky from 'ky';
+import { SharedStateProvider, useSharedState } from './store';
 // import { TokenSet, User } from '@fishhat/db';
 
 export type TokenSet = {
@@ -57,7 +58,7 @@ const api = ky.create({
 
 const AppContext = createContext<{ user?: User, notify?: (title: string, text: string, color?: string) => void }>({});
 
-const loadUser = async () => {  
+const loadUser = async () => {
   try {
     const raw_token_set = localStorage.getItem("opentab-token");
  
@@ -143,7 +144,11 @@ const router = createBrowserRouter([
           const raw_groups_response: { $data: Record<string, any>[] } = await api.get("v1/groups").json();
           // Extract groups from response
           const { $data: raw_groups } = raw_groups_response;
-          return { groups: raw_groups };
+          // Load invites
+          const raw_invites_response: { $data: Record<string, any>[] } = await api.get("v1/invites").json();
+          // Extract invites from response
+          const { $data: raw_invites } = raw_invites_response;
+          return { groups: raw_groups, invites: raw_invites };
         }
       },
       {
@@ -204,9 +209,11 @@ const openTabTheme = createTheme({
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   // <React.StrictMode>
-    <MantineProvider defaultColorScheme='dark' theme={openTabTheme}>
-      <RouterProvider router={router} />
-    </MantineProvider>
+    <SharedStateProvider>
+      <MantineProvider defaultColorScheme='dark' theme={openTabTheme}>
+        <RouterProvider router={router} />
+      </MantineProvider>
+    </SharedStateProvider>
   // </React.StrictMode>
 )
 
@@ -215,19 +222,20 @@ const NotifyContext = createContext<{ opened: boolean, data: { title: string, te
   data: { title: '', text: '', color: 'teal' },
 });
 
-const notifyToggle = ($notify: Record<string, any>) => {
-  $notify.opened = !$notify.opened;
+const notifyToggle = (state: any) => {
+  const [$state, setState] = state;
+  setState({ ...$state, notify: { ...$state.notify, opened: !$state.notify.opened } });
 }
 
-const notifyClose = ($notify: Record<string, any>) => {
-  console.log('closing');
-  $notify.opened = false;
+const notifyClose = (state: any) => {
+  const [$state, setState] = state;
+  setState({ ...$state, notify: { title: '', text: '', color: 'teal', opened: false } });
 }
 
-const notify = ($notify: Record<string, any>, title: string, text: string, color?: string) => {
-  $notify.data = { title, text, color: color ?? 'teal' };
-  notifyToggle($notify);
-  setTimeout(() => notifyClose($notify), 2500);
+const notify = (state: any, title: string, text: string, color?: string) => {
+  const [$state, setState] = state;
+  setState({ ...$state, notify: { title, text, color: color ?? 'teal', opened: true } });
+  setTimeout(() => notifyClose(state), 2500);
 }
 
 export { AppContext, NotifyContext, notify, notifyClose, notifyToggle };

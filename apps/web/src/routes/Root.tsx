@@ -1,18 +1,25 @@
-import { useContext } from "react";
-import { Link, Outlet, useLoaderData, useNavigate } from "react-router-dom";
-import { AppContext, NotifyContext, notifyClose } from "../main";
+import { AppShell, Burger, Container, Flex, Group, Title, Notification } from "@mantine/core";
 import { useDisclosure } from '@mantine/hooks';
-import { AppShell, Avatar, Text, Burger, Container, Flex, Group, Title, Notification } from "@mantine/core";
-import { IconArrowLeft, IconSettings } from '@tabler/icons-react';
+import { IconArrowLeft } from '@tabler/icons-react';
+import { useEffect } from "react";
+import { Link, Outlet, useLoaderData, useNavigate } from "react-router-dom";
+import AppFooter from "../components/AppFooter";
+import { notify, notifyClose } from "../main";
+import { useSharedState } from "../store";
 
 function Root() {
     const [burgerOpened, { toggle: burgerToggle }] = useDisclosure();
-
-    const state = useLoaderData() as ({ user?: any } | undefined);
-    const $ctx = useContext(AppContext);
-    const $notify = useContext(NotifyContext);
-
+    const [$state, setState] = useSharedState();
+    
     const navigate = useNavigate();
+    
+    const state = useLoaderData() as ({ user?: any } | undefined);
+
+    useEffect(() => {
+        if (state?.user) {
+            setState((prev: any) => ({ ...prev, user: state.user }));
+        }
+    }, [state?.user, setState]);
 
     return (
         <AppShell
@@ -49,30 +56,22 @@ function Root() {
                     <Flex w={"100%"} align="center" direction="column" h={'100%'}>
                         <Outlet />
                         <div style={{ flex: 1 }}></div>
-                        <Flex w={"100%"} mt={10} align="center" direction="row">
-                            <Avatar size="md" src={$ctx.user?.profile_picture} mr={15} />
-                            <Flex direction="column">
-                                <Text fw={600} size="md" lh={1}>{$ctx.user?.first_name} {$ctx.user?.last_name ?? ''}</Text>
-                                <Text size="sm" >{$ctx.user?.email}</Text>
-                            </Flex>
-                            <div style={{ flex: 1 }}></div>
-                            <Link to={`/settings`} className="unstyled">
-                                <IconSettings color="var(--mantine-color-text)" size={24} style={{ cursor: 'pointer' }} />
-                            </Link>
-                        </Flex>
+                        <AppFooter user={$state.user} />
                     </Flex>
                 </Container>
             </AppShell.Main>
 
+            {$state?.user?.id}
+
             
             {/* disply notification if notifyopend true */}
-            {$notify.opened && <Notification
-                title={$notify.data.title}
-                color={$notify.data.color}
-                onClose={() => notifyClose($notify)}
+            {$state.notify.opened && <Notification
+                title={$state.notify.title}
+                color={$state.notify.color}
+                onClose={() => notifyClose([$state, setState])}
                 withCloseButton
                 style={{ position: 'fixed', bottom: 10, right: 10 }}>
-                    {$notify.data.text}
+                    {$state.notify.text}
                 </Notification>
             }
         </AppShell>

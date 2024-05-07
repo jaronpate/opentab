@@ -2,13 +2,13 @@ import { Stack } from "@mantine/core";
 import { Link } from "react-router-dom";
 import GroupCard from "./GroupCard";
 
-function GroupList({ groups }: { groups: any[] }) {
+function InviteList({ invites }: { invites: any[] }) {
     return (
         <>
             <Stack w={"100%"} mb={25} bg="var(--mantine-color-body)" align="stretch" justify="flex-start" gap="xs">
-                {groups.map((group: any) => (
+                {invites.map((group: any) => (
                     <Link to={`/groups/${group.id}`} key={group.id} className="unstyled">
-                        <GroupCard group={group} />
+                        <GroupCard group={group} invite={true} />
                     </Link>
                 ))}
             </Stack>
@@ -16,4 +16,4 @@ function GroupList({ groups }: { groups: any[] }) {
     );
 }
 
-export default GroupList;
+export default InviteList;

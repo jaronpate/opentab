@@ -4,11 +4,14 @@ import { useDisclosure } from "@mantine/hooks";
 import { useEffect } from "react";
 import { Form, useActionData, useLoaderData } from "react-router-dom";
 import GroupList from "../components/GroupList";
+import InviteList from "../components/InviteList";
 
 function Groups() {
     const [opened, { open, close }] = useDisclosure(false);
 
-    const { groups } = useLoaderData() as any;
+    const { groups, invites } = useLoaderData() as any;
+
+    console.log('invites', invites)
 
     const form = useForm({
         mode: 'uncontrolled',
@@ -40,6 +43,12 @@ function Groups() {
                 </Flex>
                 
                 <GroupList groups={groups} />
+
+                <Flex w={"100%"} mb={10} align="center" justify="space-between" gap="md">
+                    <Text size="lg" fw={700}>Invites</Text>
+                    <div style={{ flex: 1 }} />
+                </Flex>
+                <InviteList invites={invites} />
             
                 <Drawer
                     offset={8}

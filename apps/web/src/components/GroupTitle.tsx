@@ -5,10 +5,11 @@ import { IconLogout, IconPlus, IconQuestionMark } from "@tabler/icons-react";
 import { useContext, useEffect } from "react";
 import { Form, useActionData } from "react-router-dom";
 import { NotifyContext, notify } from "../main";
+import { useSharedState } from "../store";
 
 function GroupTitle({ group }: { group: Record<string, any> }) {    
     const [opened, { open, close }] = useDisclosure(false);
-    const $notify = useContext(NotifyContext);
+    const $state = useSharedState();
 
     const form = useForm({
         mode: 'uncontrolled',
@@ -26,7 +27,7 @@ function GroupTitle({ group }: { group: Record<string, any> }) {
     useEffect(() => {        
         if (response?.invite) {
             close();
-            notify($notify, 'Invitation sent', 'The invitation has been sent to the new member', 'teal')
+            notify($state, 'Invitation sent', 'The invitation has been sent to the new member', 'teal')
         }
     }, [response, close]);
 

@@ -1,6 +1,6 @@
-import { Avatar, Box, Text, Flex, Tooltip } from "@mantine/core";
+import { Avatar, Box, Text, Flex, Tooltip, Button } from "@mantine/core";
 
-function GroupCard({ group }: { group: Record<string, any> }) {
+function GroupCard({ group, invite = false }: { group: Record<string, any>, invite?: boolean}) {
     return (
         <>
             <Box key={group.id}>
@@ -21,7 +21,7 @@ function GroupCard({ group }: { group: Record<string, any> }) {
                     <Tooltip.Group openDelay={300} closeDelay={100}>
                     <Avatar.Group spacing="sm">
                         {/* For each member create an avatar in the stack */}
-                        {group.members.map((member: Record<string, any>) => (
+                        {!invite && group.members.map((member: Record<string, any>) => (
                             <Tooltip label={member?.first_name ? `${member.first_name} ${member.last_name ?? ''}`.trim() : member.email} withArrow key={member.id}>
                                 <Avatar src={member.profile_picture} radius="xl" />
                             </Tooltip>
@@ -39,6 +39,7 @@ function GroupCard({ group }: { group: Record<string, any> }) {
                         </Tooltip> */}
                     </Avatar.Group>
                     </Tooltip.Group>
+                    {invite && <Button size="xs"> Join </Button>}
                 </Flex>
             </Box>
         </>
